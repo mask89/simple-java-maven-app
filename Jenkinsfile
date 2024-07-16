@@ -16,35 +16,20 @@ pipeline {
                 }
             }
         }
-        stage('SonarQube Code Analysis') {
+        stage("build & SonarQube analysis") {
+            agent any
             steps {
-                dir("${WORKSPACE}"){
-                // Run SonarQube analysis for Python
-                script {
-                    def scannerHome = tool name: 'scanner', type: 'hudson.plugins.sonar.SonarRunnerInstallation'
-                    withSonarQubeEnv('sq1') {
-                        sh "echo $pwd"
-                        sh "${scannerHome}/bin/sonar-scanner"
-                    }
-                }
-                }
-            }
-       }
-       stage("SonarQube Quality Gate Check") {
-            steps {
-                script {
-                def qualityGate = waitForQualityGate()
-                    
-                    if (qualityGate.status != 'OK') {
-                        echo "${qualityGate.status}"
-                        error "Quality Gate failed: ${qualityGateStatus}"
-                    }
-                    else {
-                        echo "${qualityGate.status}"
-                        echo "SonarQube Quality Gates Passed"
-                    }
-                }
+              withSonarQubeEnv('sq1') {
+                sh '/usr/local/maven/bin/mvn clean package sonar:sonar'
+              }
             }
         }
+          stage("Quality Gate") {
+            steps {
+              timeout(time: 1, unit: 'HOURS') {
+                waitForQualityGate abortPipeline: true
+              }
+            }
+          }
     }
 }
