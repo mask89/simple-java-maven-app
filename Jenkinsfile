@@ -16,7 +16,12 @@ pipeline {
                 }
             }
         }
-        stage("build & SonarQube analysis") {
+        stage('Dependency Check') {
+            steps {
+                dependencyCheck additionalArguments: '--format HTML', odcInstallation: 'DP-Check'
+            }
+        }
+        stage("Build & SonarQube analysis") {
             agent any
             steps {
               withSonarQubeEnv('sq1') {
