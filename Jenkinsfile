@@ -39,7 +39,7 @@ pipeline {
               }
             }
         }
-        stage('Docker Build'){
+        /*stage('Docker Build'){
             steps{
                 sh 'docker build -t sunguyen88/demohds:1.0'
             }
@@ -50,11 +50,11 @@ pipeline {
                 sh 'docker push sunguyen88/demohds:1.0'
             }
             
-        }
+        }*/
     }
-    post{
+    /*post{
         always{
             sh 'docker logout'
         }
-    }
+    }*/
 }
