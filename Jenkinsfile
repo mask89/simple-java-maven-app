@@ -1,5 +1,8 @@
 pipeline {
     agent any
+    environment {
+        DOCKERHUB_CREDENTIALS = credentials('docker')
+    }
     stages {
         stage('Build') {
             steps {
@@ -16,7 +19,7 @@ pipeline {
                 }
             }
         }
-        stage('Dependency Check') {
+        stage('OWASP Check') {
             steps {
                 dependencyCheck additionalArguments: '--format HTML', odcInstallation: 'DP-Check'
             }
@@ -35,6 +38,23 @@ pipeline {
                 waitForQualityGate abortPipeline: true
               }
             }
+        }
+        stage('Docker Build'){
+            steps{
+                sh 'docker build -t sunguyen88/demohds:1.0'
+            }
+        }
+        stage('Docker Push'){
+            steps{
+                sh 'echo $DOCKERHUB_CREDENTIALS_PWS | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
+                sh 'docker push sunguyen88/demohds:1.0'
+            }
+            
+        }
+    }
+    post{
+        always{
+            sh 'docker logout'
         }
     }
 }
